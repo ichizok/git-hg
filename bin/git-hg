@@ -102,7 +102,7 @@ function git-hg-clone {
         else
             local branch=$(cd ${GITDIR}/hgcheckout/ && hg tip | grep branch | awk '{print $2}')
         fi
-        git config hg.tracking.master "$branch"
+        git config hg.tracking.master.target "$branch"
         git pull hg "$branch"
     )
 }
@@ -145,22 +145,22 @@ function git-hg-pull {
     fi
 
     if [[ $current_branch == "master" ]]; then
-        remote_branch=$(git config hg.tracking.master || true)
+        remote_branch=$(git config hg.tracking.master.target || true)
 
         if [[ -z $remote_branch ]]; then
             if git rev-parse --verify -q remotes/hg/master > /dev/null; then
                 remote_branch="master"
-                git config hg.tracking.master master
+                git config hg.tracking.master.target master
             else
-                echo "ERROR: Cannot determine remote branch. There is no remote branch called master, and hg.tracking.master not set. Merge the desired branch manually."
+                echo "ERROR: Cannot determine remote branch. There is no remote branch called master, and hg.tracking.master.target not set. Merge the desired branch manually."
                 exit 1
             fi
         fi
     else
-        remote_branch=$(git config "hg.tracking.$current_branch" || true)
+        remote_branch=$(git config "hg.tracking.${current_branch}.target" || true)
         if [[ -z $remote_branch ]]; then
              echo "ERROR: Cannot determine the remote branch to pull from. Run git merge manually against the desired remote branch."
-             echo "Alternatively, set hg.tracking.$current_branch to the name of the branch in hg the current branch should track"
+             echo "Alternatively, set hg.tracking.${current_branch}.target to the name of the branch in hg the current branch should track"
              exit 1
         fi
     fi
