@@ -41,7 +41,7 @@ function get-gitdir {
 	echo "error: environment variable GIT_DIR must not be set"
 	exit 1
     fi
-    GITDIR="$(git rev-parse --git-dir)"
+    GITDIR="$PWD/$(git rev-parse --git-dir)"
 }
 
 function git-current-branch {
@@ -93,14 +93,14 @@ function git-hg-clone {
 	git init --bare ${GITDIR}/hgremote
 	(
 	    cd "${GITDIR}/hgremote"
-	    "$HG_FAST_EXPORT" -r "$PWD/../hgcheckout" --quiet $FORCE
+	    "$HG_FAST_EXPORT" -r "${GITDIR}/hgcheckout" --quiet $FORCE
 	)
 	git remote add hg ${GITDIR}/hgremote
 	git fetch hg
         if git rev-parse --verify -q remotes/hg/master > /dev/null; then
 	    local branch="master"
         else
-            local branch=$(cd ${GITDIR}/hgcheckout/ && hg tip | grep branch | awk '{print $2}')
+            local branch=$(cd "${GITDIR}/hgcheckout" && hg tip | grep branch | awk '{print $2}')
         fi
         git config hg.tracking.master.target "$branch"
         git pull hg "$branch"
@@ -114,10 +114,10 @@ function git-hg-fetch {
         shift
     fi
     get-gitdir
-    hg -R ${GITDIR}/hgcheckout pull
+    hg -R "${GITDIR}/hgcheckout" pull
     (
-	cd ${GITDIR}/hgremote
-	"$HG_FAST_EXPORT" -r ../hgcheckout $FORCE
+	cd "${GITDIR}/hgremote"
+	"$HG_FAST_EXPORT" -r "${GITDIR}/hgcheckout" $FORCE
     )
     git fetch hg
 }
